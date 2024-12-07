@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBAC Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .modal {
+            backdrop-filter: blur(5px);
+        }
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <aside class="w-60 bg-teal-700 text-white shadow-lg flex flex-col">
+            <div class="p-6 text-center">
+                <h1 class="text-3xl font-bold">RBAC Admin</h1>
+            </div>
+            <nav class="mt-6 flex-grow space-y-1">
+                <a href="#" class="block px-6 py-3 text-teal-200 hover:bg-teal-800 text-center">
+                    <i class="bi bi-people text-lg"></i>
+                    <span class="block text-sm">Users</span>
+                </a>
+                <a href="#" class="block px-6 py-3 text-teal-200 hover:bg-teal-800 text-center">
+                    <i class="bi bi-shield-lock text-lg"></i>
+                    <span class="block text-sm">Roles</span>
+                </a>
+                <a href="#" class="block px-6 py-3 text-teal-200 hover:bg-teal-800 text-center">
+                    <i class="bi bi-key text-lg"></i>
+                    <span class="block text-sm">Permissions</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-x-hidden overflow-y-auto px-8 py-6">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-semibold text-gray-800">User Management</h2>
+                <p class="text-gray-600">Manage users, roles, and permissions efficiently</p>
+            </div>
+
+            <!-- Add Button -->
+            <div class="flex justify-end mb-6">
+                <button onclick="addUser()" class="bg-teal-600 text-white px-6 py-2 rounded-lg shadow hover:bg-teal-700">
+                    + Add User
+                </button>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="flex justify-between items-center mb-6">
+                <div class="relative w-2/3">
+                    <input id="searchInput" type="text" placeholder="Search by name or email..." oninput="filterUsers()"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <i class="bi bi-search absolute right-3 top-3 text-gray-400"></i>
+                </div>
+                <select id="roleFilter" onchange="filterUsers()"
+                    class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <option value="All">All Roles</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Editor">Editor</option>
+                    <option value="Viewer">Viewer</option>
+                </select>
+            </div>
+
+            <!-- Users Table -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="min-w-full text-center">
+                    <thead class="bg-teal-700 text-white">
+                        <tr>
+                            <th class="px-6 py-3 text-sm font-semibold uppercase">User</th>
+                            <th class="px-6 py-3 text-sm font-semibold uppercase">Role</th>
+                            <th class="px-6 py-3 text-sm font-semibold uppercase">Status</th>
+                            <th class="px-6 py-3 text-sm font-semibold uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div id="userModal" class="hidden fixed inset-0 bg-black bg-opacity-50 modal flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 slide-in shadow-lg">
+            <h3 id="userModalTitle" class="text-2xl font-semibold mb-4 text-teal-700 text-center">Add New User</h3>
+            <form id="userForm" onsubmit="handleSaveUser(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input id="userName" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input id="userEmail" type="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                        <select id="userRole" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="Admin">Admin</option>
+                            <option value="Editor">Editor</option>
+                            <option value="Viewer">Viewer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="hideModal('userModal')" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+                        Save User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let users = [
+            { id: 1, name: 'Anurag Ruwali', email: 'anuragruwali484@gmail.com', role: 'Admin', status: 'Active' },
+            { id: 2, name: 'Bhawana Ruwali', email: 'bhawana@gmail.com', role: 'Editor', status: 'Active' },
+            { id: 3, name: 'Latika Ruwali', email: 'latikaruwali@gmail.com', role: 'Viewer', status: 'Inactive' }
+        ];
+        let editingUserId = null;
+
+        // Render users table
+        function renderUsers(data = users) {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = data.map(user => `
+                <tr>
+                    <td class="px-5 py-4 border-b">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                <i class="bi bi-person text-gray-600"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-gray-900 whitespace-no-wrap font-medium">${user.name}</p>
+                                <p class="text-gray-600 whitespace-no-wrap text-sm">${user.email}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-5 py-4 border-b">
+                        <span class="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800">${user.role}</span>
+                    </td>
+                    <td class="px-5 py-4 border-b">
+                        <span class="px-3 py-1 text-sm rounded-full ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">${user.status}</span>
+                    </td>
+                    <td class="px-5 py-4 border-b">
+                        <button onclick="editUser(${user.id})" class="text-blue-600 hover:text-blue-800 mr-3">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button onclick="deleteUser(${user.id})" class="text-red-600 hover:text-red-800">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Filter users
+        function filterUsers() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+            const filteredUsers = users.filter(user =>
+                (user.name.toLowerCase().includes(searchInput) || user.email.toLowerCase().includes(searchInput)) &&
+                (roleFilter === 'All' || user.role === roleFilter)
+            );
+            renderUsers(filteredUsers);
+        }
+
+        // Add user
+        function addUser() {
+            editingUserId = null;
+            document.getElementById('userForm').reset();
+            document.getElementById('userModalTitle').innerText = 'Add New User';
+            showModal('userModal');
+        }
+
+        // Edit user
+        function editUser(userId) {
+            editingUserId = userId;
+            const user = users.find(u => u.id === userId);
+            document.getElementById('userName').value = user.name;
+            document.getElementById('userEmail').value = user.email;
+            document.getElementById('userRole').value = user.role;
+            document.getElementById('userModalTitle').innerText = 'Edit User';
+            showModal('userModal');
+        }
+
+        // Save user
+        function handleSaveUser(event) {
+            event.preventDefault();
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            const role = document.getElementById('userRole').value;
+
+            if (editingUserId) {
+                const user = users.find(u => u.id === editingUserId);
+                user.name = name;
+                user.email = email;
+                user.role = role;
+            } else {
+                users.push({ id: Date.now(), name, email, role, status: 'Active' });
+            }
+            hideModal('userModal');
+            renderUsers();
+        }
+
+        // Delete user
+        function deleteUser(userId) {
+            users = users.filter(u => u.id !== userId);
+            renderUsers();
+        }
+
+        // Show modal
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        // Hide modal
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Initial render
+        renderUsers();
+    </script>
+</body>
+</html>
