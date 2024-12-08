@@ -1,6 +1,6 @@
-# React.js Role-Based Access Control (RBAC) Dashboard
+# Role-Based Access Control (RBAC) Dashboard
 
-This repository contains a **React.js-based RBAC Dashboard** designed for managing users, roles, and permissions. The dashboard provides a user-friendly interface for adding, editing, deleting, and filtering user data. It is fully responsive and styled with **TailwindCSS** and **Bootstrap Icons**.
+This repository contains a **RBAC Dashboard** designed for managing users, roles, and permissions. The dashboard provides a user-friendly interface for adding, editing, deleting, and filtering user data. It is fully responsive and styled with **TailwindCSS** and **Bootstrap Icons**.
 
 ---
 
@@ -27,8 +27,6 @@ This repository contains a **React.js-based RBAC Dashboard** designed for managi
 ---
 
 ## Technologies Used
-
-- React.js
 - TailwindCSS
 - Bootstrap Icons
 - JavaScript (ES6)
